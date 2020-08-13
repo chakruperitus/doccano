@@ -129,7 +129,7 @@ class ClassificationStorage(BaseStorage):
     ...
     """
     @transaction.atomic
-    def save(self, user):
+    def save(self, user, additional_users=None):
         saved_labels = {label.text: label for label in self.project.labels.all()}
         for data in self.data:
             docs = self.save_doc(data)
@@ -141,6 +141,9 @@ class ClassificationStorage(BaseStorage):
             saved_labels = self.update_saved_labels(saved_labels, new_labels)
             annotations = self.make_annotations(docs, labels, saved_labels)
             self.save_annotation(annotations, user)
+            if additional_users:
+                for additional_user in additional_users:
+                    self.save_annotation(annotations, additional_user)
 
     @classmethod
     def extract_unique_labels(cls, labels):
@@ -164,7 +167,7 @@ class SequenceLabelingStorage(BaseStorage):
     ...
     """
     @transaction.atomic
-    def save(self, user):
+    def save(self, user, additional_users=None):
         saved_labels = {label.text: label for label in self.project.labels.all()}
         for data in self.data:
             docs = self.save_doc(data)
@@ -176,6 +179,9 @@ class SequenceLabelingStorage(BaseStorage):
             saved_labels = self.update_saved_labels(saved_labels, new_labels)
             annotations = self.make_annotations(docs, labels, saved_labels)
             self.save_annotation(annotations, user)
+            if additional_users:
+                for additional_user in additional_users:
+                    self.save_annotation(annotations, additional_user)
 
     @classmethod
     def extract_unique_labels(cls, labels):
