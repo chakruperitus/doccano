@@ -280,7 +280,15 @@ class TextUploadAPI(APIView):
         parser = cls.select_parser(file_format)
         data = parser.parse(file)
         storage = project.get_storage(data)
-        storage.save(user)
+
+        if not project.collaborative_annotation:
+            # we don't want to share annotations (each annotator can make their own edits BUT we are also uploading
+            # annotations. So, copy these to each project member so that they can all see the annotations but can choose
+            # to add to it or delete these 'seeded' annotations.
+            additional_users = [project_user for project_user in project.users.all()
+                                if project_user.username != user.username]
+            storage.save(user, additional_users)
+
 
     @classmethod
     def select_parser(cls, file_format):
